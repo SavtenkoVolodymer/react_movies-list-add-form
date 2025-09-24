@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import React, { useState, FormEvent } from 'react';
 import { TextField } from '../TextField';
 import { Movie } from '../../types/Movie';
@@ -7,20 +6,24 @@ type Props = {
   onAdd: (movie: Movie) => void;
 };
 
-const urlPattern =
-  /^((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=+$,\w]+@)?[A-Za-z0-9.-]+|(?:www\.|[-;:&=+$,\w]+@)[A-Za-z0-9.-]+)((?:\/[+~%/.\w-_]*)?\??(?:[-+=&;%@,.\w_]*)#?(?:[,.!\/\\\w]*))?)$/;
+const urlPattern = new RegExp(
+  '^((([A-Za-z]{3,9}:(?:\\/\\/)?)(?:[-;:&=+$,\\w]+@)?' +
+    '[A-Za-z0-9.-]+|(?:www\\.|[-;:&=+$,\\w]+@)[A-Za-z0-9.-]+)' +
+    '((?:\\/[+~%/.\\w-_]*)?\\??(?:[-+=&;%@,.\\w_]*)#?(?:[,.!\\/\\\\\\w]*))?)$',
+);
 
 const imdbIdPattern = /^tt\d+$/;
 
-export const NewMovie: React.FC<Props> = ({ onAdd }) => {
-  const [movie, setMovie] = useState<Movie>({
-    title: '',
-    description: '',
-    imgUrl: '',
-    imdbUrl: '',
-    imdbId: '',
-  });
+const initialMovie: Movie = {
+  title: '',
+  description: '',
+  imgUrl: '',
+  imdbUrl: '',
+  imdbId: '',
+};
 
+export const NewMovie: React.FC<Props> = ({ onAdd }) => {
+  const [movie, setMovie] = useState<Movie>({ ...initialMovie });
   const [formKey, setFormKey] = useState(0);
 
   const handleChange = (field: keyof Movie, value: string) => {
@@ -41,8 +44,8 @@ export const NewMovie: React.FC<Props> = ({ onAdd }) => {
     );
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
     if (!isFormValid()) {
       return;
@@ -50,19 +53,13 @@ export const NewMovie: React.FC<Props> = ({ onAdd }) => {
 
     onAdd({
       title: movie.title.trim(),
+      description: movie.description?.trim() || '',
       imgUrl: movie.imgUrl.trim(),
       imdbUrl: movie.imdbUrl.trim(),
       imdbId: movie.imdbId.trim(),
-      description: movie.description?.trim() || '',
     });
 
-    setMovie({
-      title: '',
-      description: '',
-      imgUrl: '',
-      imdbUrl: '',
-      imdbId: '',
-    });
+    setMovie({ ...initialMovie });
     setFormKey(prev => prev + 1);
   };
 
@@ -77,8 +74,8 @@ export const NewMovie: React.FC<Props> = ({ onAdd }) => {
         value={movie.title}
         required
         minLength={1}
-        onChange={(value: string) => handleChange('title', value)}
-        data-cy="title"
+        onChange={value => handleChange('title', value)}
+        dataCy="movie-title"
       />
 
       <TextField
@@ -86,8 +83,8 @@ export const NewMovie: React.FC<Props> = ({ onAdd }) => {
         label="Description"
         placeholder="Optional description"
         value={movie.description ?? ''}
-        onChange={(value: string) => handleChange('description', value)}
-        data-cy="description"
+        onChange={value => handleChange('description', value)}
+        dataCy="movie-description"
       />
 
       <TextField
@@ -98,8 +95,8 @@ export const NewMovie: React.FC<Props> = ({ onAdd }) => {
         required
         pattern={urlPattern}
         patternError="Enter a valid URL"
-        onChange={(value: string) => handleChange('imgUrl', value)}
-        data-cy="imgUrl"
+        onChange={value => handleChange('imgUrl', value)}
+        dataCy="movie-imgUrl"
       />
 
       <TextField
@@ -110,8 +107,8 @@ export const NewMovie: React.FC<Props> = ({ onAdd }) => {
         required
         pattern={urlPattern}
         patternError="Enter a valid URL"
-        onChange={(value: string) => handleChange('imdbUrl', value)}
-        data-cy="imdbUrl"
+        onChange={value => handleChange('imdbUrl', value)}
+        dataCy="movie-imdbUrl"
       />
 
       <TextField
@@ -122,8 +119,8 @@ export const NewMovie: React.FC<Props> = ({ onAdd }) => {
         required
         pattern={imdbIdPattern}
         patternError="Use format tt1234567"
-        onChange={(value: string) => handleChange('imdbId', value)}
-        data-cy="imdbId"
+        onChange={value => handleChange('imdbId', value)}
+        dataCy="movie-imdbId"
       />
 
       <button

@@ -12,6 +12,7 @@ type Props = {
   patternError?: string;
   minLength?: number;
   validate?: (value: string) => string | null;
+  dataCy?: string;
 };
 
 function getRandomDigits() {
@@ -24,12 +25,12 @@ export const TextField: React.FC<Props> = ({
   label = name,
   placeholder = `Enter ${label}`,
   required = false,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onChange = (_: string) => {},
+  onChange = () => {},
   pattern,
   patternError,
   minLength,
   validate,
+  dataCy,
 }) => {
   const [id] = useState(() => `${name}-${getRandomDigits()}`);
   const [touched, setTouched] = useState(false);
@@ -75,10 +76,8 @@ export const TextField: React.FC<Props> = ({
         <input
           type="text"
           id={id}
-          data-cy={`movie-${name}`}
-          className={classNames('input', {
-            'is-danger': hasError,
-          })}
+          data-cy={dataCy ?? `movie-${name}`}
+          className={classNames('input', { 'is-danger': hasError })}
           placeholder={placeholder}
           value={value}
           onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
