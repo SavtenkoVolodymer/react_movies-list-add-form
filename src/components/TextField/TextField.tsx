@@ -8,6 +8,10 @@ type Props = {
   placeholder?: string;
   required?: boolean;
   onChange?: (newValue: string) => void;
+  pattern?: RegExp;
+  patternError?: string;
+  minLength?: number;
+  validate?: (value: string) => string | null;
 };
 
 function getRandomDigits() {
@@ -20,14 +24,46 @@ export const TextField: React.FC<Props> = ({
   label = name,
   placeholder = `Enter ${label}`,
   required = false,
-  onChange = () => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onChange = (_: string) => {},
+  pattern,
+  patternError,
+  minLength,
+  validate,
 }) => {
-  // generate a unique id once on component load
   const [id] = useState(() => `${name}-${getRandomDigits()}`);
-
-  // To show errors only if the field was touched (onBlur)
   const [touched, setTouched] = useState(false);
-  const hasError = touched && required && !value;
+
+  const trimmedValue = value.trim();
+
+  const isEmpty = !trimmedValue;
+  const isTooShort = minLength !== undefined && trimmedValue.length < minLength;
+  const isPatternInvalid = pattern && !pattern.test(trimmedValue);
+  const customError = validate ? validate(trimmedValue) : null;
+
+  const hasError =
+    touched &&
+    ((required && isEmpty) || isTooShort || isPatternInvalid || !!customError);
+
+  const getErrorMessage = () => {
+    if (required && isEmpty) {
+      return `${label} is required`;
+    }
+
+    if (isTooShort) {
+      return `${label} must be at least ${minLength} characters`;
+    }
+
+    if (isPatternInvalid) {
+      return patternError || `${label} has invalid format`;
+    }
+
+    if (customError) {
+      return customError;
+    }
+
+    return '';
+  };
 
   return (
     <div className="field">
@@ -45,12 +81,14 @@ export const TextField: React.FC<Props> = ({
           })}
           placeholder={placeholder}
           value={value}
-          onChange={event => onChange(event.target.value)}
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+            onChange(event.target.value)
+          }
           onBlur={() => setTouched(true)}
         />
       </div>
 
-      {hasError && <p className="help is-danger">{`${label} is required`}</p>}
+      {hasError && <p className="help is-danger">{getErrorMessage()}</p>}
     </div>
   );
 };
